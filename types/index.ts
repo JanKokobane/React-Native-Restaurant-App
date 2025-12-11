@@ -43,9 +43,6 @@ export interface User {
   email: string;
   phone: string;
   address: string;
-  cardNumber: string;
-  cardExpiry: string;
-  cardCVV: string;
 }
 
 export interface Order {

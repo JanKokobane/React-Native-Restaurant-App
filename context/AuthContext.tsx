@@ -23,9 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: email,
       phone: '+1234567890',
       address: '123 Main Street, Apt 4B, New York, NY 10001',
-      cardNumber: '4532 **** **** 1234',
-      cardExpiry: '12/25',
-      cardCVV: '***',
     };
     setUser(mockUser);
     return true;

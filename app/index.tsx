@@ -1,7 +1,16 @@
-import {View,Text,StyleSheet,Image,TouchableOpacity,Dimensions,} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
+
+const LogoImage = require('../assets/images/fooddash-high-resolution-logo-transparent.png');
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,7 +36,8 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>FoodGo</Text>
+        <Image source={LogoImage} style={styles.logo} />
+
         <Text style={styles.subtitle}>Order your favourite food!</Text>
         <Text style={styles.description}>
           Enjoy the best meals—whether you're dining in, reserving a table, or ordering takeout.
@@ -36,19 +46,22 @@ export default function WelcomeScreen() {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => router.push('/auth/login')}>
+            onPress={() => router.push('/auth/login')}
+          >
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.registerButton}
-            onPress={() => router.push('/auth/register')}>
+            onPress={() => router.push('/auth/register')}
+          >
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.guestButton}
-            onPress={() => router.replace('/(tabs)')}>
+            onPress={() => router.replace('/(tabs)')}
+          >
             <Text style={styles.guestButtonText}>Continue as Guest</Text>
           </TouchableOpacity>
         </View>
@@ -77,21 +90,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.3)',
   },
   content: {
-  flex: 1,
-  padding: 24,
-  justifyContent: 'center',
-  borderTopLeftRadius: 24,
-  borderTopRightRadius: 24,
-  backgroundColor: '#fff', 
-},
-
-  title: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: '#EF4444',
-    textAlign: 'center',
-    marginBottom: 8,
-    marginTop: -50,
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: '#fff',
+    alignItems: 'center', 
+  },
+  logo: {
+    width: 300,
+    height: 100,
+    resizeMode: 'contain',
+    marginBottom: 30,
   },
   subtitle: {
     fontSize: 20,
@@ -108,6 +119,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     gap: 16,
+    width: '100%',
   },
   loginButton: {
     backgroundColor: '#EF4444',
