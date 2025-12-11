@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import {View,Text,StyleSheet,Image,TouchableOpacity,Dimensions,} from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
@@ -37,8 +30,7 @@ export default function WelcomeScreen() {
         <Text style={styles.title}>FoodGo</Text>
         <Text style={styles.subtitle}>Order your favourite food!</Text>
         <Text style={styles.description}>
-          Discover delicious meals from your favorite restaurants and get them
-          delivered right to your door
+          Enjoy the best meals—whether you're dining in, reserving a table, or ordering takeout.
         </Text>
 
         <View style={styles.buttonContainer}>
@@ -68,12 +60,13 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#e01515ff',
   },
   imageContainer: {
     width: width,
-    height: height * 0.5,
+    height: height * 0.3,
     position: 'relative',
+    marginBottom: -20,
   },
   image: {
     width: '100%',
@@ -84,19 +77,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.3)',
   },
   content: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-  },
+  flex: 1,
+  padding: 24,
+  justifyContent: 'center',
+  borderTopLeftRadius: 24,
+  borderTopRightRadius: 24,
+  backgroundColor: '#fff', 
+},
+
   title: {
     fontSize: 48,
     fontWeight: '700',
     color: '#EF4444',
     textAlign: 'center',
     marginBottom: 8,
+    marginTop: -50,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 12,
