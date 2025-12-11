@@ -34,7 +34,7 @@ export default function HomeScreen() {
     <TouchableOpacity
       key={item.id}
       style={styles.foodCard}
-      onPress={() => router.push(`../food/${item.id}`)}>
+      onPress={() => router.push(`/food/${item.id}`)}>
       <Image source={{ uri: item.image }} style={styles.foodImage} />
       <View style={styles.foodInfo}>
         <Text style={styles.foodName} numberOfLines={1}>
