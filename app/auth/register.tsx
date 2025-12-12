@@ -4,27 +4,42 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   Image,
+  StyleSheet, // ✅ FIX ADDED
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Mail, Phone, Lock, Eye, EyeOff, User, MapPin } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  MapPin,
+  Navigation,
+  Hash,
+  Map,
+} from 'lucide-react-native';
 
-// Correct logo import
 const LogoImage = require('../../assets/images/fooddash-high-resolution-logo-transparent.png');
 
 export default function RegisterScreen() {
   const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
     email: '',
     phone: '',
-    address: '',
+    streetName: '',
+    streetNumber: '',
+    addressLine2: '',
+    fullAddress: '',
     password: '',
     confirmPassword: '',
   });
@@ -34,51 +49,56 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleRegister = async () => {
-  setError('');
-
-  if (
-    !formData.name ||
-    !formData.surname ||
-    !formData.email ||
-    !formData.phone ||
-    !formData.address ||
-    !formData.password
-  ) {
-    setError('Please fill in all fields');
-    return;
-  }
-
-  if (formData.password !== formData.confirmPassword) {
-    setError('Passwords do not match');
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const { success, message } = await register({
-      name: formData.name,
-      surname: formData.surname,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      password: formData.password,
-    });
-
-    if (success) {
-      router.push('./login');
-    } else {
-      setError(message);
-    }
-  } catch (err) {
-    setError('An error occurred. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
-
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleRegister = async () => {
+    setError('');
+
+    if (
+      !formData.name ||
+      !formData.surname ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.streetName ||
+      !formData.streetNumber ||
+      !formData.fullAddress ||
+      !formData.password
+    ) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { success, message } = await register({
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        phone: formData.phone,
+        streetName: formData.streetName,
+        streetNumber: formData.streetNumber,
+        addressLine2: formData.addressLine2,
+        address: formData.fullAddress,
+        password: formData.password,
+      });
+
+      if (success) {
+        router.push('./login');
+      } else {
+        setError(message);
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,14 +106,8 @@ export default function RegisterScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft color="#1F2937" size={24} />
         </TouchableOpacity>
 
@@ -110,8 +124,9 @@ export default function RegisterScreen() {
         ) : null}
 
         <View style={styles.form}>
-
           <Text style={styles.sectionTitleInfo}>Please enter your info</Text>
+
+          {/* NAME */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Name</Text>
             <View style={styles.inputWithIcon}>
@@ -125,6 +140,7 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          {/* SURNAME */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Surname</Text>
             <View style={styles.inputWithIcon}>
@@ -137,7 +153,8 @@ export default function RegisterScreen() {
               />
             </View>
           </View>
-          
+
+          {/* EMAIL */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputWithIcon}>
@@ -153,6 +170,7 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          {/* PHONE */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Phone Number</Text>
             <View style={styles.inputWithIcon}>
@@ -167,22 +185,70 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          {/* ADDRESS FIELDS */}
+          <Text style={styles.sectionTitle}>Address Details</Text>
+
+          {/* Street Name */}
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>Street Name</Text>
+            <View style={styles.inputWithIcon}>
+              <Navigation color="#6B7280" size={18} />
+              <TextInput
+                style={styles.inputFlex}
+                placeholder="Enter your street name"
+                value={formData.streetName}
+                onChangeText={(value) => updateField('streetName', value)}
+              />
+            </View>
+          </View>
+
+          {/* Street Number */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Street Number</Text>
+            <View style={styles.inputWithIcon}>
+              <Hash color="#6B7280" size={18} />
+              <TextInput
+                style={styles.inputFlex}
+                placeholder="Enter street number"
+                value={formData.streetNumber}
+                onChangeText={(value) => updateField('streetNumber', value)}
+              />
+            </View>
+          </View>
+
+          {/* Address Line 2 */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Address Line 2 (Optional)</Text>
+            <View style={styles.inputWithIcon}>
+              <Map color="#6B7280" size={18} />
+              <TextInput
+                style={styles.inputFlex}
+                placeholder="Apartment / Complex / Unit"
+                value={formData.addressLine2}
+                onChangeText={(value) => updateField('addressLine2', value)}
+              />
+            </View>
+          </View>
+
+          {/* Full Address */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Full Address</Text>
             <View style={styles.inputWithIcon}>
               <MapPin color="#6B7280" size={18} />
               <TextInput
                 style={styles.inputFlex}
                 placeholder="Enter your full address"
-                value={formData.address}
-                onChangeText={(value) => updateField('address', value)}
+                value={formData.fullAddress}
+                onChangeText={(value) => updateField('fullAddress', value)}
                 multiline
               />
             </View>
           </View>
 
+          {/* SECURITY */}
           <Text style={styles.sectionTitle}>Security</Text>
 
+          {/* PASSWORD */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWithIcon}>
@@ -195,11 +261,16 @@ export default function RegisterScreen() {
                 secureTextEntry={!showPassword}
               />
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                {showPassword ? <EyeOff color="#6B7280" size={18} /> : <Eye color="#6B7280" size={18} />}
+                {showPassword ? (
+                  <EyeOff color="#6B7280" size={18} />
+                ) : (
+                  <Eye color="#6B7280" size={18} />
+                )}
               </TouchableOpacity>
             </View>
           </View>
 
+          {/* CONFIRM PASSWORD */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Confirm Password</Text>
             <View style={styles.inputWithIcon}>
@@ -212,16 +283,18 @@ export default function RegisterScreen() {
                 secureTextEntry={!showConfirmPassword}
               />
               <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                {showConfirmPassword ? <EyeOff color="#6B7280" size={18} /> : <Eye color="#6B7280" size={18} />}
+                {showConfirmPassword ? (
+                  <EyeOff color="#6B7280" size={18} />
+                ) : (
+                  <Eye color="#6B7280" size={18} />
+                )}
               </TouchableOpacity>
             </View>
           </View>
 
+          {/* BUTTON */}
           <TouchableOpacity
-            style={[
-              styles.registerButton,
-              loading && styles.registerButtonDisabled,
-            ]}
+            style={[styles.registerButton, loading && styles.registerButtonDisabled]}
             onPress={handleRegister}
             disabled={loading}
           >
@@ -270,11 +343,11 @@ const styles = StyleSheet.create({
     marginTop: -20 
   },
   title: {
-     fontSize: 32, 
-     fontWeight: '700', 
-     color: '#1F2937', 
-     marginBottom: 8 
-    },
+    fontSize: 32, 
+    fontWeight: '700', 
+    color: '#1F2937', 
+    marginBottom: 8 
+  },
   subtitle: { 
     fontSize: 16, 
     color: '#6B7280', 
@@ -296,46 +369,47 @@ const styles = StyleSheet.create({
 
   sectionTitleInfo: {
     fontSize: 18, 
-     fontWeight: '600', 
-     color: '#1F2937', 
-     marginTop: -10, 
-     marginBottom: 16
+    fontWeight: '600', 
+    color: '#1F2937', 
+    marginTop: -10, 
+    marginBottom: 16
   },
   sectionTitle: {
-     fontSize: 18, 
-     fontWeight: '600', 
-     color: '#1F2937', 
-     marginTop: 16, 
-     marginBottom: 16 
-    },
+    fontSize: 18, 
+    fontWeight: '600', 
+    color: '#1F2937', 
+    marginTop: 16, 
+    marginBottom: 16 
+  },
   
   inputContainer: { 
     marginBottom: 20 
   },
   label: {
-     fontSize: 14, 
-     fontWeight: '600', 
-     color: '#374151', 
-     marginBottom: 8 
-    },
+    fontSize: 14, 
+    fontWeight: '600', 
+    color: '#374151', 
+    marginBottom: 8 
+  },
   input: {
-     borderWidth: 1, 
-     borderColor: '#D1D5DB', 
-     borderRadius: 8, 
-     paddingHorizontal: 16, 
-     paddingVertical: 12, 
-     fontSize: 16, color: '#1F2937' 
-    },
+    borderWidth: 1, 
+    borderColor: '#D1D5DB', 
+    borderRadius: 8, 
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    fontSize: 16, 
+    color: '#1F2937' 
+  },
   inputWithIcon: {
-     flexDirection: 'row', 
-     alignItems: 'center', 
-     borderWidth: 1, 
-     borderColor: '#D1D5DB', 
-     borderRadius: 8, 
-     paddingHorizontal: 12, 
-     paddingVertical: 12, 
-     gap: 8 
-    },
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1, 
+    borderColor: '#D1D5DB', 
+    borderRadius: 8, 
+    paddingHorizontal: 12, 
+    paddingVertical: 12, 
+    gap: 8 
+  },
   inputFlex: { 
     flex: 1, 
     fontSize: 16, 
@@ -357,13 +431,15 @@ const styles = StyleSheet.create({
     fontWeight: '600' 
   },
   loginPrompt: {
-     flexDirection: 'row', 
-     justifyContent: 'center', 
-     marginTop: 24, 
-     marginBottom: 24 },
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    marginTop: 24, 
+    marginBottom: 24 
+  },
   loginPromptText: { 
     color: '#6B7280', 
-    fontSize: 14 },
+    fontSize: 14 
+  },
   loginLink: { 
     color: '#EF4444', 
     fontSize: 14, 

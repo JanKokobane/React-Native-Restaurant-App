@@ -42,8 +42,13 @@ export interface User {
   surname: string;
   email: string;
   phone: string;
-  address: string;
+
+  streetName: string;
+  streetNumber: string;
+  addressLine2?: string; 
+  address: string; 
 }
+
 
 export interface Order {
   id: string;
