@@ -35,46 +35,47 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleRegister = async () => {
-    setError('');
+  setError('');
 
-    if (
-      !formData.name ||
-      !formData.surname ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.address ||
-      !formData.password
-    ) {
-      setError('Please fill in all fields');
-      return;
+  if (
+    !formData.name ||
+    !formData.surname ||
+    !formData.email ||
+    !formData.phone ||
+    !formData.address ||
+    !formData.password
+  ) {
+    setError('Please fill in all fields');
+    return;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    setError('Passwords do not match');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const { success, message } = await register({
+      name: formData.name,
+      surname: formData.surname,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      password: formData.password,
+    });
+
+    if (success) {
+      router.push('./login');
+    } else {
+      setError(message);
     }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const success = await register({
-        name: formData.name,
-        surname: formData.surname,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-      });
-
-      if (success) {
-        router.push('./login');
-      } else {
-        setError('Registration failed. Please try again.');
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    setError('An error occurred. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
