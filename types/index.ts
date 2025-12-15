@@ -42,13 +42,11 @@ export interface User {
   surname: string;
   email: string;
   phone: string;
-
   streetName: string;
   streetNumber: string;
-  addressLine2?: string; 
-  address: string; 
+  addressLine2?: string;
+  fullAddress: string; 
 }
-
 
 export interface Order {
   id: string;

@@ -8,7 +8,7 @@ import {
   ScrollView,
   Platform,
   Image,
-  StyleSheet, // ✅ FIX ADDED
+  StyleSheet, 
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -85,9 +85,10 @@ export default function RegisterScreen() {
         streetName: formData.streetName,
         streetNumber: formData.streetNumber,
         addressLine2: formData.addressLine2,
-        address: formData.fullAddress,
+        fullAddress: formData.fullAddress, 
         password: formData.password,
       });
+
 
       if (success) {
         router.push('./login');
@@ -292,7 +293,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* BUTTON */}
           <TouchableOpacity
             style={[styles.registerButton, loading && styles.registerButtonDisabled]}
             onPress={handleRegister}

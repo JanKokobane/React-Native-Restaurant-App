@@ -15,7 +15,8 @@ import { foodItems, categories } from '@/data/foodData';
 import { FoodItem } from '@/types';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2;
+
+const CARD_WIDTH = (width - 48 - 12) / 2;
 
 export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -34,17 +35,21 @@ export default function HomeScreen() {
     <TouchableOpacity
       key={item.id}
       style={styles.foodCard}
-      onPress={() => router.push(`/food/${item.id}`)}>
+      onPress={() => router.push(`/food/${item.id}`)}
+      activeOpacity={0.8}
+    >
       <Image source={{ uri: item.image }} style={styles.foodImage} />
       <View style={styles.foodInfo}>
         <Text style={styles.foodName} numberOfLines={1}>
           {item.name}
         </Text>
+
         <View style={styles.ratingContainer}>
           <Star size={14} color="#FCD34D" fill="#FCD34D" />
           <Text style={styles.rating}>{item.rating}</Text>
           <Text style={styles.prepTime}>{item.prepTime}</Text>
         </View>
+
         <Text style={styles.price}>${item.price.toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
@@ -53,8 +58,10 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>FoodGo</Text>
-        <Text style={styles.headerSubtitle}>Order your favourite food!</Text>
+        <Text style={styles.headerTitle}>FoodDash</Text>
+        <Text style={styles.headerSubtitle}>
+          Order your favourite food!
+        </Text>
       </View>
 
       <View style={styles.searchContainer}>
@@ -73,20 +80,25 @@ export default function HomeScreen() {
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}>
+        contentContainerStyle={styles.categoriesContent}
+      >
         {categories.map((category) => (
           <TouchableOpacity
             key={category}
             style={[
               styles.categoryButton,
-              selectedCategory === category && styles.categoryButtonActive,
+              selectedCategory === category &&
+                styles.categoryButtonActive,
             ]}
-            onPress={() => setSelectedCategory(category)}>
+            onPress={() => setSelectedCategory(category)}
+          >
             <Text
               style={[
                 styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive,
-              ]}>
+                selectedCategory === category &&
+                  styles.categoryTextActive,
+              ]}
+            >
               {category}
             </Text>
           </TouchableOpacity>
@@ -96,7 +108,8 @@ export default function HomeScreen() {
       <ScrollView
         style={styles.foodList}
         contentContainerStyle={styles.foodListContent}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.foodGrid}>
           {filteredItems.map((item) => renderFoodCard(item))}
         </View>
@@ -110,6 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+
   header: {
     paddingHorizontal: 24,
     paddingTop: 60,
@@ -127,6 +141,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     opacity: 0.9,
   },
+
   searchContainer: {
     paddingHorizontal: 24,
     paddingVertical: 16,
@@ -145,6 +160,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1F2937',
   },
+
   categoriesContainer: {
     maxHeight: 50,
   },
@@ -169,6 +185,7 @@ const styles = StyleSheet.create({
   categoryTextActive: {
     color: '#ffffff',
   },
+
   foodList: {
     flex: 1,
   },
@@ -177,11 +194,14 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 24,
   },
+
+  /* ✅ GRID WITH SAFE SPACING */
   foodGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    justifyContent: 'space-between',
   },
+
   foodCard: {
     width: CARD_WIDTH,
     backgroundColor: '#ffffff',
@@ -189,7 +209,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    marginBottom: 16,
   },
+
   foodImage: {
     width: '100%',
     height: 140,

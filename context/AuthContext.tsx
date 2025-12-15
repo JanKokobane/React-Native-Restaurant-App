@@ -1,18 +1,16 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { auth, db } from '../firebase/firebaseConfig';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { User } from '@/types';
+import { createContext, useContext, useState, ReactNode } from "react";
+import { User } from "@/types";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  register: (userData: Omit<User, 'id'> & { password: string }) => Promise<{ success: boolean; message: string }>;
-  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  register: (
+    userData: Omit<User, "id"> & { password: string }
+  ) => Promise<{ success: boolean; message: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
 }
 
@@ -21,59 +19,70 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // REGISTER
-  const register = async (userData: Omit<User, 'id'> & { password: string }) => {
+  const API_URL = "https://react-native-restaurant-app-backend.onrender.com/api/auth";
+
+  const register = async (userData: Omit<User, "id"> & { password: string }) => {
     try {
-      // Check if user already exists
-      const userDoc = await getDoc(doc(db, 'users', userData.email));
-      if (userDoc.exists()) {
-        return { success: false, message: 'Email already registered. Please login.' };
-      }
-
-      // Create user in Firebase Auth
-      const res = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-
-      // Save extra info in Firestore
-      await setDoc(doc(db, 'users', res.user.uid), {
-        name: userData.name,
-        surname: userData.surname,
-        email: userData.email,
-        phone: userData.phone,
-        address: userData.address,
+      const res = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: userData.name,
+          surname: userData.surname,
+          email: userData.email,
+          phone: userData.phone,
+          streetName: userData.streetName,
+          streetNumber: userData.streetNumber,
+          addressLine2: userData.addressLine2 || "",
+          fullAddress: userData.fullAddress, 
+          password: userData.password,
+        }),
       });
 
-      setUser({ ...userData, id: res.user.uid });
-      return { success: true, message: 'Registration successful!' };
+      const data = await res.json();
+
+      if (data.success) {
+        setUser({ ...userData, id: data.user.id });
+        return { success: true, message: "Registration successful!" };
+      } else {
+        return { success: false, message: data.message || "Registration failed" };
+      }
     } catch (err: any) {
-      console.log('Register Error:', err);
-      return { success: false, message: err.message || 'Registration failed' };
+      console.log("Register Error:", err);
+      return { success: false, message: "An error occurred during registration" };
     }
   };
 
-  // LOGIN
   const login = async (email: string, password: string) => {
     try {
-      const res = await signInWithEmailAndPassword(auth, email, password);
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      const userDoc = await getDoc(doc(db, 'users', res.user.uid));
-      const data = userDoc.data();
+      const data = await res.json();
 
-      if (data) setUser({ id: res.user.uid, ...data } as User);
-
-      return { success: true, message: 'Login successful!' };
+      if (data.success) {
+        setUser(data.user);
+        return { success: true, message: "Login successful!" };
+      } else {
+        return { success: false, message: data.message || "Login failed" };
+      }
     } catch (err: any) {
-      console.log('Login Error:', err);
-      return { success: false, message: err.message || 'Login failed. Please check your credentials.' };
+      console.log("Login Error:", err);
+      return { success: false, message: "An error occurred during login" };
     }
   };
 
   const logout = async () => {
-    await signOut(auth);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, register, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, register, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -81,6 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
