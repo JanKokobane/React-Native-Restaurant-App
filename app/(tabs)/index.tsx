@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
 
   header: {
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
+    paddingTop: 30,
+    paddingBottom: 10,
     backgroundColor: '#EF4444',
   },
   headerTitle: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F3F4F6',
-    borderRadius: 12,
+    borderRadius: 50,
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
@@ -161,30 +161,38 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
 
-  categoriesContainer: {
-    maxHeight: 50,
-  },
-  categoriesContent: {
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-  },
-  categoryButtonActive: {
-    backgroundColor: '#EF4444',
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  categoryTextActive: {
-    color: '#ffffff',
-  },
+ categoriesContainer: {
+  maxHeight: 50,
+},
+
+categoriesContent: {
+  paddingHorizontal: 24,
+  gap: 12,
+},
+
+categoryButton: {
+  paddingHorizontal: 20,
+  paddingVertical: 15, 
+  borderRadius: 20,
+  backgroundColor: '#F3F4F6',
+},
+
+
+categoryButtonActive: {
+  backgroundColor: '#EF4444',
+},
+
+categoryText: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: '#6B7280',
+  paddingBottom: 0, 
+},
+
+categoryTextActive: {
+  color: '#ffffff',
+},
+
 
   foodList: {
     flex: 1,

@@ -152,10 +152,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 24,
+    paddingTop: 30,
+    paddingBottom: 10,
     backgroundColor: '#EF4444',
   },
+
+
   headerTitle: {
     fontSize: 32,
     fontWeight: '700',

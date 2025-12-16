@@ -1,7 +1,8 @@
 import { Tabs } from 'expo-router';
-import { Home, ShoppingCart, Package, User } from 'lucide-react-native';
-import { useCart } from '@/context/CartContext';
+import { Home, Package, User } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { View, Text, StyleSheet } from 'react-native';
+import { useCart } from '@/context/CartContext';
 
 export default function TabLayout() {
   const { getCartItemCount } = useCart();
@@ -20,21 +21,29 @@ export default function TabLayout() {
           paddingBottom: 8,
           height: 60,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
+          tabBarIcon: ({ size, color }) => (
+            <Home size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="cart"
         options={{
           title: 'Cart',
           tabBarIcon: ({ size, color }) => (
-            <View>
-              <ShoppingCart size={size} color={color} />
+            <View style={styles.iconContainer}>
+              <Ionicons
+                name="cart-outline"
+                size={size}
+                color={color}
+              />
               {cartCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{cartCount}</Text>
@@ -44,18 +53,24 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="orders"
         options={{
           title: 'Orders',
-          tabBarIcon: ({ size, color }) => <Package size={size} color={color} />,
+          tabBarIcon: ({ size, color }) => (
+            <Package size={size} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ size, color }) => <User size={size} color={color} />,
+          tabBarIcon: ({ size, color }) => (
+            <User size={size} color={color} />
+          ),
         }}
       />
     </Tabs>
@@ -63,12 +78,18 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  iconContainer: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     position: 'absolute',
     right: -8,
-    top: -4,
+    top: -6,
     backgroundColor: '#EF4444',
-    borderRadius: 10,
+    borderRadius: 9,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',

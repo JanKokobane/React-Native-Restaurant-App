@@ -45,8 +45,11 @@ export interface User {
   streetName: string;
   streetNumber: string;
   addressLine2?: string;
-  fullAddress: string; 
+  fullAddress: string;
+  username?: string;     
+  joinedDate?: string;   
 }
+
 
 export interface Order {
   id: string;
