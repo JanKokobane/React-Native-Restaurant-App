@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -27,15 +27,11 @@ export default function ProfileScreen() {
     return `${firstInitial}${lastInitial}`.toUpperCase();
   };
 
-  if (!isAuthenticated) {
-    return null; 
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <ChevronLeft size={28} color="#1F2937" />
+          <ChevronLeft size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
         <View style={{ width: 28 }} />
@@ -137,62 +133,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    paddingBottom: 10,
+    backgroundColor: '#EF4444',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  notAuthContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 48,
-  },
-  notAuthText: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  notAuthSubtext: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  loginButton: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 48,
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  loginButtonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  registerButton: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 48,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#EF4444',
-    width: '100%',
-    alignItems: 'center',
-  },
-  registerButtonText: {
-    color: '#EF4444',
-    fontSize: 16,
-    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
