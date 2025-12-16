@@ -16,34 +16,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout } = useAuth();
 
-  if (!isAuthenticated) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-        </View>
-        <View style={styles.notAuthContainer}>
-          <Text style={styles.notAuthText}>You are not logged in</Text>
-          <Text style={styles.notAuthSubtext}>
-            Please login to view your profile
-          </Text>
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={() => router.push('../auth/login')}
-          >
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.registerButton}
-            onPress={() => router.push('../auth/register')}
-          >
-            <Text style={styles.registerButtonText}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
-
   const handleLogout = () => {
     logout();
     router.replace('/');
@@ -55,12 +27,9 @@ export default function ProfileScreen() {
     return `${firstInitial}${lastInitial}`.toUpperCase();
   };
 
-  const getJoinedDate = () => {
-    if (user?.joinedDate) {
-      return user.joinedDate;
-    }
-    return 'Joined in 2024';
-  };
+  if (!isAuthenticated) {
+    return null; 
+  }
 
   return (
     <View style={styles.container}>
@@ -102,8 +71,6 @@ export default function ProfileScreen() {
             {user?.username && (
               <Text style={styles.username}>@{user.username}</Text>
             )}
-
-            <Text style={styles.joinedText}>{getJoinedDate()}</Text>
 
             <View style={styles.actionButtons}>
               <TouchableOpacity
