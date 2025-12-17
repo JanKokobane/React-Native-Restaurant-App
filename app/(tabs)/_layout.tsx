@@ -3,10 +3,12 @@ import { Home, Package, User } from 'lucide-react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, StyleSheet } from 'react-native';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function TabLayout() {
   const { getCartItemCount } = useCart();
   const cartCount = getCartItemCount();
+  const { isAuthenticated } = useAuth();
 
   return (
     <Tabs
@@ -39,11 +41,7 @@ export default function TabLayout() {
           title: 'Cart',
           tabBarIcon: ({ size, color }) => (
             <View style={styles.iconContainer}>
-              <Ionicons
-                name="cart-outline"
-                size={size}
-                color={color}
-              />
+              <Ionicons name="cart-outline" size={size} color={color} />
               {cartCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{cartCount}</Text>
@@ -65,7 +63,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="profile"
+        name={isAuthenticated ? 'profile' : 'guest-profile'}
         options={{
           title: 'Profile',
           tabBarIcon: ({ size, color }) => (
@@ -73,6 +71,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
     </Tabs>
   );
 }

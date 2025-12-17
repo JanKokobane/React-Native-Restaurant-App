@@ -24,28 +24,29 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    setError('');
+ const handleLogin = async () => {
+  setError('');
 
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
+  if (!email || !password) {
+    setError('Please fill in all fields');
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const success = await login(email, password);
-      if (success) {
-        router.replace('../(tabs)');
-      } else {
-        setError('Invalid email or password');
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const result = await login(email, password); 
+    if (result.success) {
+      router.replace('../(tabs)');
+    } else {
+      setError(result.message || 'Invalid email or password');
     }
-  };
+  } catch (err) {
+    setError('An error occurred. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <KeyboardAvoidingView
@@ -139,7 +140,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#eee6e6ff' },
+  container: { flex: 1, backgroundColor: '#ffffffff' },
   scrollContent: { flexGrow: 1, padding: 24 },
   backButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
   header: { marginBottom: 32, alignItems: 'center' },

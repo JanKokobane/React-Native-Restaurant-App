@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (data.success && data.user && data.user.id) {
         setUser({ ...userData, id: data.user.id });
         return { success: true, message: 'Registration successful!' };
       } else {
@@ -76,14 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await res.json();
 
-      if (data.success) {
+      // Require both success and a valid user object
+      if (data.success && data.user && data.user.id) {
         setUser(data.user);
         return { success: true, message: 'Login successful!' };
       } else {
-        return { success: false, message: data.message || 'Login failed' };
+        setUser(null); // clear any ghost user
+        return { success: false, message: data.message || 'Invalid credentials' };
       }
     } catch (err: any) {
       console.log('Login Error:', err);
+      setUser(null);
       return { success: false, message: 'An error occurred during login' };
     }
   };

@@ -14,7 +14,12 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+  router.replace('/guest-profile');
+  return null;
+  }
 
   const handleLogout = () => {
     logout();

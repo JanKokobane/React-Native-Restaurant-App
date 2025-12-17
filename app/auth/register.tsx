@@ -127,7 +127,6 @@ export default function RegisterScreen() {
         <View style={styles.form}>
           <Text style={styles.sectionTitleInfo}>Please enter your info</Text>
 
-          {/* NAME */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Name</Text>
             <View style={styles.inputWithIcon}>
@@ -141,7 +140,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* SURNAME */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Surname</Text>
             <View style={styles.inputWithIcon}>
@@ -155,7 +153,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* EMAIL */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputWithIcon}>
@@ -171,7 +168,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* PHONE */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Phone Number</Text>
             <View style={styles.inputWithIcon}>
@@ -186,10 +182,8 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* ADDRESS FIELDS */}
           <Text style={styles.sectionTitle}>Address Details</Text>
 
-          {/* Street Name */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Street Name</Text>
             <View style={styles.inputWithIcon}>
@@ -203,7 +197,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* Street Number */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Street Number</Text>
             <View style={styles.inputWithIcon}>
@@ -217,7 +210,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* Address Line 2 */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Address Line 2 (Optional)</Text>
             <View style={styles.inputWithIcon}>
@@ -231,7 +223,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* Full Address */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Address</Text>
             <View style={styles.inputWithIcon}>
@@ -246,10 +237,8 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* SECURITY */}
           <Text style={styles.sectionTitle}>Security</Text>
 
-          {/* PASSWORD */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWithIcon}>
@@ -271,7 +260,6 @@ export default function RegisterScreen() {
             </View>
           </View>
 
-          {/* CONFIRM PASSWORD */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Confirm Password</Text>
             <View style={styles.inputWithIcon}>
@@ -318,7 +306,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: '#eee6e6ff' 
+    backgroundColor: '#ffffffff' 
   },
   scrollContent: { 
     flexGrow: 1, 

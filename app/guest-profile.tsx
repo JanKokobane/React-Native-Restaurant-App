@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 
-const LogoImage = require('../../assets/images/fooddash-high-resolution-logo-transparent.png');
+const LogoImage = require('../assets/images/fooddash-high-resolution-logo-transparent.png');
+
 
 export default function GuestProfileScreen() {
   return (
