@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, message: "User profile not found" };
       }
     } catch (err: any) {
-      let message = "Login failed";
+      let message = "Email or password is incorrect. Please enter the correct Email/Password to login";
       if (err.code === "auth/wrong-password") message = "Incorrect password";
       if (err.code === "auth/user-not-found") message = "No account found with that email";
       if (err.code === "auth/invalid-email") message = "Invalid email format";

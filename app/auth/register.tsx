@@ -99,8 +99,7 @@ export default function RegisterScreen() {
         setError(message);
         return;
       }
-
-      // ✅ USER IS ALREADY LOGGED IN HERE
+      
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -111,7 +110,6 @@ export default function RegisterScreen() {
 
       const uid = user.uid;
 
-      // ✅ SAVE TO FIRESTORE
       await setDoc(doc(db, 'users', uid), {
         id: uid,
         name: formData.name,

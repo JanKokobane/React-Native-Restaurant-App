@@ -1,15 +1,27 @@
-import { Tabs } from 'expo-router';
-import { Home, Package, User } from 'lucide-react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { View, Text, StyleSheet } from 'react-native';
-import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import React from 'react';
+import { useCart } from '@/context/CartContext';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs, router } from 'expo-router';
+import { Home, Package, User } from 'lucide-react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function TabLayout() {
   const { getCartItemCount } = useCart();
   const cartCount = getCartItemCount();
   const { isAuthenticated } = useAuth();
+
+  // ✅ Prevent redirect loop crash
+  const hasRedirected = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.replace('/'); // send to WelcomeScreen
+    }
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) return null;
 
   return (
     <Tabs
@@ -64,7 +76,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name={isAuthenticated ? 'profile' : 'guest-profile'}
+        name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ size, color }) => (
@@ -72,7 +84,6 @@ export default function TabLayout() {
           ),
         }}
       />
-
     </Tabs>
   );
 }

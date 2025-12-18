@@ -12,20 +12,26 @@ import {
   Edit2,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function ProfileScreen() {
   const { user, logout, isAuthenticated } = useAuth();
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/'); 
+    }
+  }, [isAuthenticated]);
+
   if (!isAuthenticated) {
-  router.replace('/guest-profile');
-  return null;
+    return null; 
   }
 
-  const handleLogout = () => {
-    logout();
-    router.replace('/');
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/'); 
   };
+  
 
   const getInitials = () => {
     const firstInitial = user?.name?.charAt(0) || '';
@@ -115,7 +121,10 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.logoutCard} onPress={handleLogout}>
+        <TouchableOpacity
+          style={styles.logoutCard}
+          onPress={handleLogout}
+        >
           <LogOut size={20} color="#1F2937" />
           <Text style={styles.logoutText}>Log out</Text>
         </TouchableOpacity>

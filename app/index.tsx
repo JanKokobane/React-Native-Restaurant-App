@@ -59,12 +59,13 @@ export default function WelcomeScreen() {
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.guestButton}
             onPress={() => router.replace('/(tabs)')}
           >
             <Text style={styles.guestButtonText}>Continue as Guest</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          
         </View>
       </View>
     </View>
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
     height: 100,
     resizeMode: 'contain',
     marginBottom: 30,
+    marginTop: -45,
   },
   subtitle: {
     fontSize: 20,
