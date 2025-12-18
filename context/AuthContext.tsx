@@ -1,11 +1,31 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { User } from '@/types';
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { User } from "@/types";
+import { app } from "@/firebaseConfig";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  deleteUser,
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   register: (
-    userData: Omit<User, 'id'> & { password: string }
+    userData: Omit<User, "id"> & { password: string }
   ) => Promise<{ success: boolean; message: string }>;
   login: (
     email: string,
@@ -23,118 +43,102 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const API_URL =
-    'https://react-native-restaurant-app-backend.onrender.com/api';
+  // --- Keep user logged in across refresh ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (snap.exists()) {
+          setUser(snap.data() as User);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
+  // --- Register ---
   const register = async (
-    userData: Omit<User, 'id'> & { password: string }
+    userData: Omit<User, "id"> & { password: string }
   ) => {
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: userData.name,
-          surname: userData.surname,
-          email: userData.email,
-          phone: userData.phone,
-          streetName: userData.streetName,
-          streetNumber: userData.streetNumber,
-          addressLine2: userData.addressLine2 || '',
-          fullAddress: userData.fullAddress,
-          password: userData.password,
-        }),
-      });
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
+      const uid = cred.user.uid;
 
-      const data = await res.json();
+      const profile = { ...userData, id: uid };
+      await setDoc(doc(db, "users", uid), profile);
 
-      if (data.success && data.user && data.user.id) {
-        setUser({ ...userData, id: data.user.id });
-        return { success: true, message: 'Registration successful!' };
-      } else {
-        return {
-          success: false,
-          message: data.message || 'Registration failed',
-        };
-      }
+      setUser(profile);
+      return { success: true, message: "Registration successful!" };
     } catch (err: any) {
-      console.log('Register Error:', err);
-      return {
-        success: false,
-        message: 'An error occurred during registration',
-      };
+      console.log("Register Error:", err.code, err.message);
+      let message = "Registration failed";
+      if (err.code === "auth/email-already-in-use") message = "Email already in use";
+      if (err.code === "auth/invalid-email") message = "Invalid email format";
+      if (err.code === "auth/weak-password") message = "Password is too weak";
+      return { success: false, message };
     }
   };
 
+  // --- Login ---
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
 
-      const data = await res.json();
-
-      // Require both success and a valid user object
-      if (data.success && data.user && data.user.id) {
-        setUser(data.user);
-        return { success: true, message: 'Login successful!' };
+      const snap = await getDoc(doc(db, "users", uid));
+      if (snap.exists()) {
+        setUser(snap.data() as User);
+        return { success: true, message: "Login successful!" };
       } else {
-        setUser(null); // clear any ghost user
-        return { success: false, message: data.message || 'Invalid credentials' };
+        return { success: false, message: "User profile not found" };
       }
     } catch (err: any) {
-      console.log('Login Error:', err);
-      setUser(null);
-      return { success: false, message: 'An error occurred during login' };
+      console.log("Login Error:", err.code, err.message);
+      let message = "Login failed";
+      if (err.code === "auth/wrong-password") message = "Incorrect password";
+      if (err.code === "auth/user-not-found") message = "No account found with that email";
+      if (err.code === "auth/invalid-email") message = "Invalid email format";
+      return { success: false, message };
     }
   };
 
+  // --- Logout ---
   const logout = async () => {
+    await signOut(auth);
     setUser(null);
   };
 
+  // --- Update Profile ---
   const updateProfile = async (updates: Partial<User>) => {
-    if (!user) return { success: false, message: 'No user logged in' };
+    if (!user) return { success: false, message: "No user logged in" };
     try {
-      const res = await fetch(`${API_URL}/users/${user.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setUser(data);
-        return { success: true, message: 'Profile updated successfully!' };
-      } else {
-        return { success: false, message: data.error || 'Update failed' };
-      }
+      await updateDoc(doc(db, "users", user.id), updates);
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      return { success: true, message: "Profile updated successfully!" };
     } catch (err: any) {
-      console.log('Update Error:', err);
-      return { success: false, message: 'An error occurred during update' };
+      console.log("Update Error:", err.message);
+      return { success: false, message: err.message || "Update failed" };
     }
   };
 
+  // --- Delete Account ---
   const deleteAccount = async () => {
-    if (!user) return { success: false, message: 'No user logged in' };
+    if (!user) return { success: false, message: "No user logged in" };
     try {
-      const res = await fetch(`${API_URL}/users/${user.id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        setUser(null);
-        return { success: true, message: 'Account deleted successfully!' };
-      } else {
-        const data = await res.json();
-        return { success: false, message: data.error || 'Delete failed' };
-      }
+      await deleteDoc(doc(db, "users", user.id));
+      if (auth.currentUser) await deleteUser(auth.currentUser);
+      setUser(null);
+      return { success: true, message: "Account deleted successfully!" };
     } catch (err: any) {
-      console.log('Delete Error:', err);
-      return { success: false, message: 'An error occurred during deletion' };
+      console.log("Delete Error:", err.message);
+      return { success: false, message: err.message || "Delete failed" };
     }
   };
 
@@ -157,6 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
