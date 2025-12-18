@@ -1,25 +1,15 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { User } from "@/types";
-import { app } from "@/firebaseConfig";
+import { User } from "@/types";  
+import { auth, db } from "@/firebaseConfig";
+import * as React from "react";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   deleteUser,
   onAuthStateChanged,
 } from "firebase/auth";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
-
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
@@ -43,7 +33,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  // --- Keep user logged in across refresh ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -58,16 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  // --- Register ---
-  const register = async (
-    userData: Omit<User, "id"> & { password: string }
-  ) => {
+  const register = async (userData: Omit<User, "id"> & { password: string }) => {
     try {
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        userData.email,
-        userData.password
-      );
+      const cred = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
       const uid = cred.user.uid;
 
       const profile = { ...userData, id: uid };
@@ -76,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(profile);
       return { success: true, message: "Registration successful!" };
     } catch (err: any) {
-      console.log("Register Error:", err.code, err.message);
       let message = "Registration failed";
       if (err.code === "auth/email-already-in-use") message = "Email already in use";
       if (err.code === "auth/invalid-email") message = "Invalid email format";
@@ -85,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Login ---
   const login = async (email: string, password: string) => {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
@@ -99,7 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, message: "User profile not found" };
       }
     } catch (err: any) {
-      console.log("Login Error:", err.code, err.message);
       let message = "Login failed";
       if (err.code === "auth/wrong-password") message = "Incorrect password";
       if (err.code === "auth/user-not-found") message = "No account found with that email";
@@ -108,13 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- Logout ---
   const logout = async () => {
     await signOut(auth);
     setUser(null);
   };
 
-  // --- Update Profile ---
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) return { success: false, message: "No user logged in" };
     try {
@@ -123,12 +100,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(updatedUser);
       return { success: true, message: "Profile updated successfully!" };
     } catch (err: any) {
-      console.log("Update Error:", err.message);
       return { success: false, message: err.message || "Update failed" };
     }
   };
 
-  // --- Delete Account ---
   const deleteAccount = async () => {
     if (!user) return { success: false, message: "No user logged in" };
     try {
@@ -137,22 +112,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       return { success: true, message: "Account deleted successfully!" };
     } catch (err: any) {
-      console.log("Delete Error:", err.message);
       return { success: false, message: err.message || "Delete failed" };
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        register,
-        login,
-        logout,
-        updateProfile,
-        deleteAccount,
-      }}
+      value={{ user, isAuthenticated: !!user, register, login, logout, updateProfile, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>
