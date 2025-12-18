@@ -1,9 +1,10 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 import {
   initializeAuth,
   getAuth,
   getReactNativePersistence,
+  Auth,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -16,13 +17,12 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-// ✅ App (safe)
 export const app = getApps().length === 0
   ? initializeApp(firebaseConfig)
   : getApp();
 
-// ✅ Auth (SAFE for Expo + Fast Refresh)
-let auth;
+// ✅ Explicitly type auth
+let auth: Auth;
 
 try {
   auth = initializeAuth(app, {
@@ -38,5 +38,4 @@ try {
 
 export { auth };
 
-// ✅ Firestore
-export const db = getFirestore(app);
+export const db: Firestore = getFirestore(app);

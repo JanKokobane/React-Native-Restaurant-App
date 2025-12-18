@@ -1,3 +1,7 @@
+import { doc, setDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { db } from '@/firebaseConfig';
+
 import { useState } from 'react';
 import {
   View,
@@ -8,7 +12,7 @@ import {
   ScrollView,
   Platform,
   Image,
-  StyleSheet, 
+  StyleSheet,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -77,6 +81,7 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
+
     try {
       const { success, message } = await register({
         name: formData.name,
@@ -86,16 +91,43 @@ export default function RegisterScreen() {
         streetName: formData.streetName,
         streetNumber: formData.streetNumber,
         addressLine2: formData.addressLine2,
-        fullAddress: formData.fullAddress, 
+        fullAddress: formData.fullAddress,
         password: formData.password,
       });
 
-
-      if (success) {
-        router.push('./login');
-      } else {
+      if (!success) {
         setError(message);
+        return;
       }
+
+      // ✅ USER IS ALREADY LOGGED IN HERE
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        setError('User not authenticated');
+        return;
+      }
+
+      const uid = user.uid;
+
+      // ✅ SAVE TO FIRESTORE
+      await setDoc(doc(db, 'users', uid), {
+        id: uid,
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        phone: formData.phone,
+        streetName: formData.streetName,
+        streetNumber: formData.streetNumber,
+        fullAddress: `${formData.streetNumber} ${formData.streetName}`,
+        addressLine2: formData.addressLine2 || '',
+        joinedDate: new Date().toISOString(),
+      });
+
+      // ✅ GO HOME (AUTO LOGIN)
+      router.replace('/');
+
     } catch (err) {
       setError('An error occurred. Please try again.');
     } finally {
