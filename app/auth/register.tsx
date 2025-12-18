@@ -25,6 +25,7 @@ import {
   Hash,
   Map,
 } from 'lucide-react-native';
+import React from 'react';
 
 const LogoImage = require('../../assets/images/fooddash-high-resolution-logo-transparent.png');
 

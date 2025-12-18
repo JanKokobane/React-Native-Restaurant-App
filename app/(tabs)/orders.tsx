@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useOrders } from '@/context/OrderContext';
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react-native';
+import React from 'react';
 
 export default function OrdersScreen() {
   const { isAuthenticated } = useAuth();

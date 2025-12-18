@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
+import React from 'react';
 
 const LogoImage = require('../assets/images/fooddash-high-resolution-logo-transparent.png');
 

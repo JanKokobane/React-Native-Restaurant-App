@@ -13,6 +13,7 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import React from 'react';
 
 const LogoImage = require('../../assets/images/fooddash-high-resolution-logo-transparent.png');
 

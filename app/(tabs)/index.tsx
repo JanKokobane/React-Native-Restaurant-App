@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { Search, Star } from 'lucide-react-native';
 import { foodItems, categories } from '@/data/foodData';
 import { FoodItem } from '@/types';
+import React from 'react';
 
 const { width } = Dimensions.get('window');
 

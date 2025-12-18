@@ -12,6 +12,7 @@ import {
   Edit2,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
 
 export default function ProfileScreen() {
   const { user, logout, isAuthenticated } = useAuth();

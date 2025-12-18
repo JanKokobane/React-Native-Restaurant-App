@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { Trash2, Minus, Plus } from 'lucide-react-native';
+import React from 'react';
 
 export default function CartScreen() {
   const { cart, removeFromCart, updateQuantity, clearCart, getCartTotal } =

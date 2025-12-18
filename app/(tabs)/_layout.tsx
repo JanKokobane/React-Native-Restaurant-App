@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, Text, StyleSheet } from 'react-native';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import React from 'react';
 
 export default function TabLayout() {
   const { getCartItemCount } = useCart();

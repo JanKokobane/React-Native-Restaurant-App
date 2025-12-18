@@ -9,6 +9,7 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
+import React from 'react';
 
 const LogoImage = require('../assets/images/fooddash-high-resolution-logo-transparent.png');
 

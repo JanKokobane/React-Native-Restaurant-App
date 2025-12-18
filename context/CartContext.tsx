@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { CartItem, FoodItem, DrinkOption, ExtraOption } from '@/types';
+import React from 'react';
 
 interface CartContextType {
   cart: CartItem[];

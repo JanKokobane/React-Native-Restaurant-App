@@ -10,6 +10,7 @@ import {
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft, User, Mail, Phone, MapPin } from 'lucide-react-native';
+import React from 'react';
 
 export default function ContactInfoScreen() {
   const { user, updateProfile } = useAuth();
