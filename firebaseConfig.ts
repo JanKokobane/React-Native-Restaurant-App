@@ -1,7 +1,11 @@
-// firebaseConfig.ts
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import {
+  initializeAuth,
+  getAuth,
+  getReactNativePersistence,
+} from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -12,8 +16,27 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const app =
-  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// ✅ App (safe)
+export const app = getApps().length === 0
+  ? initializeApp(firebaseConfig)
+  : getApp();
 
-export const auth = getAuth(app);
+// ✅ Auth (SAFE for Expo + Fast Refresh)
+let auth;
+
+try {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch (error: any) {
+  if (error.code === 'auth/already-initialized') {
+    auth = getAuth(app);
+  } else {
+    throw error;
+  }
+}
+
+export { auth };
+
+// ✅ Firestore
 export const db = getFirestore(app);

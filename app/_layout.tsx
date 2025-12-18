@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
@@ -20,9 +19,9 @@ export default function RootLayout() {
             <Stack.Screen name="auth/register" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="food/[id]" />
-            <Stack.Screen name="checkout" />
             <Stack.Screen name="+not-found" />
           </Stack>
+
           <StatusBar style="auto" />
         </OrderProvider>
       </CartProvider>
