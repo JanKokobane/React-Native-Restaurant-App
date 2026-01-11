@@ -13,18 +13,12 @@ import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
   isAuthenticated: boolean;
-  register: (
-    userData: Omit<User, "id"> & { password: string }
-  ) => Promise<{ success: boolean; message: string }>;
-  login: (
-    email: string,
-    password: string
-  ) => Promise<{ success: boolean; message: string }>;
+  register: (userData: Omit<User, "id"> & { password: string }) => Promise<{ success: boolean; message: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
-  updateProfile: (
-    updates: Partial<User>
-  ) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; message: string }>;
   deleteAccount: () => Promise<{ success: boolean; message: string }>;
 }
 
@@ -32,17 +26,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-        if (snap.exists()) {
-          setUser(snap.data() as User);
-        }
+        if (snap.exists()) setUser(snap.data() as User);
+        else setUser(null);
       } else {
         setUser(null);
       }
+      setLoading(false);
     });
     return unsubscribe;
   }, []);
@@ -52,16 +47,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const cred = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
       const uid = cred.user.uid;
 
-      const profile = { ...userData, id: uid };
+      const { image, ...rest } = userData;
+      const profile: User = {
+        ...rest,
+        id: uid,
+        image: image ?? "" 
+      };
+
       await setDoc(doc(db, "users", uid), profile);
 
       setUser(profile);
       return { success: true, message: "Registration successful!" };
     } catch (err: any) {
+      console.error("Registration error:", err);
+
       let message = "Registration failed";
       if (err.code === "auth/email-already-in-use") message = "Email already in use";
-      if (err.code === "auth/invalid-email") message = "Invalid email format";
-      if (err.code === "auth/weak-password") message = "Password is too weak";
+      else if (err.code === "auth/invalid-email") message = "Invalid email format";
+      else if (err.code === "auth/weak-password") message = "Password is too weak";
+      else if (err.code === "permission-denied") message = "You don't have permission to write user data";
+      else if (err.message) message = err.message;
+
       return { success: false, message };
     }
   };
@@ -69,20 +75,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      const uid = cred.user.uid;
-
-      const snap = await getDoc(doc(db, "users", uid));
+      const snap = await getDoc(doc(db, "users", cred.user.uid));
       if (snap.exists()) {
         setUser(snap.data() as User);
         return { success: true, message: "Login successful!" };
-      } else {
-        return { success: false, message: "User profile not found" };
-      }
+      } else return { success: false, message: "User profile not found" };
     } catch (err: any) {
-      let message = "Email or password is incorrect. Please enter the correct Email/Password to login";
+      let message = "Email or password is incorrect";
       if (err.code === "auth/wrong-password") message = "Incorrect password";
-      if (err.code === "auth/user-not-found") message = "No account found with that email";
-      if (err.code === "auth/invalid-email") message = "Invalid email format";
+      if (err.code === "auth/user-not-found") message = "No account found";
       return { success: false, message };
     }
   };
@@ -96,8 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return { success: false, message: "No user logged in" };
     try {
       await updateDoc(doc(db, "users", user.id), updates);
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
+      setUser({ ...user, ...updates });
       return { success: true, message: "Profile updated successfully!" };
     } catch (err: any) {
       return { success: false, message: err.message || "Update failed" };
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, register, login, logout, updateProfile, deleteAccount }}
+      value={{ user, loading, isAuthenticated: !!user, register, login, logout, updateProfile, deleteAccount }}
     >
       {children}
     </AuthContext.Provider>

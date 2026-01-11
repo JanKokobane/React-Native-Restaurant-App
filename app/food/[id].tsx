@@ -13,6 +13,7 @@ import { ArrowLeft, Star, Minus, Plus } from 'lucide-react-native';
 import { foodItems } from '@/data/foodData';
 import { useCart } from '@/context/CartContext';
 import { DrinkOption, ExtraOption } from '@/types';
+import React from 'react';
 
 const { width } = Dimensions.get('window');
 

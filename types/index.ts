@@ -37,6 +37,7 @@ export interface CartItem {
 }
 
 export interface User {
+  image: string | undefined;
   id: string;
   name: string;
   surname: string;

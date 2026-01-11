@@ -93,6 +93,7 @@ export default function RegisterScreen() {
         addressLine2: formData.addressLine2,
         fullAddress: formData.fullAddress,
         password: formData.password,
+        image: undefined
       });
 
       if (!success) {

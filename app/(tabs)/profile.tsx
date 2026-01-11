@@ -7,31 +7,18 @@ import {
   LifeBuoy,
   RefreshCw,
   MessageSquare,
-  LogOut,
   ChevronLeft,
   Edit2,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export default function ProfileScreen() {
-  const { user, logout, isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/'); 
-    }
-  }, [isAuthenticated]);
+  const { user, isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return null; 
   }
-
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/'); 
-  };
-  
 
   const getInitials = () => {
     const firstInitial = user?.name?.charAt(0) || '';
@@ -121,19 +108,11 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.logoutCard}
-          onPress={handleLogout}
-        >
-          <LogOut size={20} color="#1F2937" />
-          <Text style={styles.logoutText}>Log out</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity>
           <Text style={styles.legalText}>Legal agreements</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>Version 1.0.0</Text>
+        <Text style={styles.versionText}>Version 1.0.1</Text>
       </ScrollView>
     </View>
   );

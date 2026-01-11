@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
@@ -16,13 +9,15 @@ const LogoImage = require('../assets/images/fooddash-high-resolution-logo-transp
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth(); 
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/(tabs)');
+    if (!loading && isAuthenticated) {
+      router.replace('/(tabs)'); 
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loading]);
+
+  if (loading) return null; 
 
   return (
     <View style={styles.container}>
@@ -58,14 +53,6 @@ export default function WelcomeScreen() {
           >
             <Text style={styles.registerButtonText}>Create Account</Text>
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            style={styles.guestButton}
-            onPress={() => router.replace('/(tabs)')}
-          >
-            <Text style={styles.guestButtonText}>Continue as Guest</Text>
-          </TouchableOpacity> */}
-          
         </View>
       </View>
     </View>
@@ -98,7 +85,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     backgroundColor: '#fff',
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   logo: {
     width: 300,
@@ -147,14 +134,5 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: 16,
     fontWeight: '600',
-  },
-  guestButton: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  guestButtonText: {
-    color: '#6B7280',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });
