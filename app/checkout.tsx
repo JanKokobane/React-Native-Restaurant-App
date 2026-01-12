@@ -12,18 +12,26 @@ import {
 } from 'react-native';
 import { useCart } from '@/context/CartContext';
 import { router } from 'expo-router';
-import { CreditCard, Lock, ArrowLeft, CheckCircle } from 'lucide-react-native';
+import { CreditCard, Lock, ArrowLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// Firestore imports
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
 
 export default function CheckoutScreen() {
   const { getCartTotal, cart, clearCart } = useCart(); 
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | null>(null);
 
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
+
+  const [streetAddress, setStreetAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const total = getCartTotal();
@@ -60,6 +68,16 @@ export default function CheckoutScreen() {
       newErrors.cvv = 'Invalid CVV';
     }
 
+    if (!streetAddress || streetAddress.length < 5) {
+      newErrors.streetAddress = 'Enter a valid street address';
+    }
+    if (!city) {
+      newErrors.city = 'City is required';
+    }
+    if (!postalCode || postalCode.length < 4) {
+      newErrors.postalCode = 'Invalid postal code';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -68,20 +86,62 @@ export default function CheckoutScreen() {
     if (!validateCard()) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      clearCart();
-      router.replace('./order-success');
-    }, 2000);
-  };
 
-  const handlePayPalPayment = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+     
+      const orderItems = cart.map(item => ({
+        cartItemId: item.cartItemId,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+        selectedSides: item.selectedSides,
+        removedIngredients: item.removedIngredients,
+        foodItem: {
+          id: item.foodItem.id,
+          name: item.foodItem.name,
+          price: item.foodItem.price,
+          image: item.foodItem.image || null,
+        },
+        selectedDrink: item.selectedDrink
+          ? {
+              id: item.selectedDrink.id,
+              name: item.selectedDrink.name,
+              price: item.selectedDrink.price,
+            }
+          : null,
+        selectedExtras: item.selectedExtras.map(extra => ({
+          id: extra.id,
+          name: extra.name,
+          price: extra.price,
+        })),
+      }));
+
+      await addDoc(collection(db, "orders"), {
+        items: orderItems,
+        subtotal: Number(total),
+        deliveryFee: Number(deliveryFee),
+        total: Number(grandTotal),
+        address: {
+          street: streetAddress,
+          city,
+          postalCode: postalCode || null,
+        },
+        payment: {
+          method: "card",
+          cardHolder: cardName,
+          last4: cardNumber ? cardNumber.slice(-4) : "",
+        },
+        status: "PENDING",
+        createdAt: serverTimestamp(),
+        userId: "demoUser", 
+      });
+
       clearCart();
       router.replace('./order-success');
-    }, 2000);
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed to save order.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (cart.length === 0) { 
@@ -95,7 +155,7 @@ export default function CheckoutScreen() {
     );
   }
 
-
+ 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -114,6 +174,7 @@ export default function CheckoutScreen() {
         </LinearGradient>
 
         <View style={styles.content}>
+          {/* ORDER SUMMARY */}
           <View style={styles.summaryCard}>
             <Text style={styles.sectionTitle}>Order Summary</Text>
             <View style={styles.summaryRow}>
@@ -131,149 +192,144 @@ export default function CheckoutScreen() {
             </View>
           </View>
 
+          {/* PAYMENT METHOD */}
           <View style={styles.paymentSection}>
             <Text style={styles.sectionTitle}>Payment Method</Text>
-
-            <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === 'card' && styles.paymentOptionActive,
-              ]}
-              onPress={() => setPaymentMethod('card')}
-            >
+            <View style={[styles.paymentOption, styles.paymentOptionActive]}>
               <View style={styles.paymentOptionLeft}>
                 <View style={styles.paymentIconContainer}>
-                  <CreditCard color={paymentMethod === 'card' ? '#DC2626' : '#6B7280'} size={24} />
+                  <CreditCard color="#DC2626" size={24} />
                 </View>
                 <Text style={styles.paymentOptionText}>Credit / Debit Card</Text>
               </View>
-              <View style={[
-                styles.radio,
-                paymentMethod === 'card' && styles.radioActive,
-              ]}>
-                {paymentMethod === 'card' && <View style={styles.radioDot} />}
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === 'paypal' && styles.paymentOptionActive,
-              ]}
-              onPress={() => setPaymentMethod('paypal')}
-            >
-              <View style={styles.paymentOptionLeft}>
-                <View style={styles.paymentIconContainer}>
-                  <Text style={styles.paypalIcon}>P</Text>
-                </View>
-                <Text style={styles.paymentOptionText}>PayPal</Text>
-              </View>
-              <View style={[
-                styles.radio,
-                paymentMethod === 'paypal' && styles.radioActive,
-              ]}>
-                {paymentMethod === 'paypal' && <View style={styles.radioDot} />}
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          {paymentMethod === 'card' && (
-            <View style={styles.cardForm}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Card Number</Text>
-                <TextInput
-                  style={[styles.input, errors.cardNumber && styles.inputError]}
-                  placeholder="1234 5678 9012 3456"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="number-pad"
-                  value={cardNumber}
-                  onChangeText={(text) => setCardNumber(formatCardNumber(text))}
-                  maxLength={19}
-                />
-                {errors.cardNumber && (
-                  <Text style={styles.errorText}>{errors.cardNumber}</Text>
-                )}
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Cardholder Name</Text>
-                <TextInput
-                  style={[styles.input, errors.cardName && styles.inputError]}
-                  placeholder="John Doe"
-                  placeholderTextColor="#9CA3AF"
-                  value={cardName}
-                  onChangeText={setCardName}
-                  autoCapitalize="words"
-                />
-                {errors.cardName && (
-                  <Text style={styles.errorText}>{errors.cardName}</Text>
-                )}
-              </View>
-
-              <View style={styles.row}>
-                <View style={[styles.inputContainer, styles.halfWidth]}>
-                  <Text style={styles.inputLabel}>Expiry Date</Text>
-                  <TextInput
-                    style={[styles.input, errors.expiryDate && styles.inputError]}
-                    placeholder="MM/YY"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="number-pad"
-                    value={expiryDate}
-                    onChangeText={(text) => setExpiryDate(formatExpiryDate(text))}
-                    maxLength={5}
-                  />
-                  {errors.expiryDate && (
-                    <Text style={styles.errorText}>{errors.expiryDate}</Text>
-                  )}
-                </View>
-
-                <View style={[styles.inputContainer, styles.halfWidth]}>
-                  <Text style={styles.inputLabel}>CVV</Text>
-                  <TextInput
-                    style={[styles.input, errors.cvv && styles.inputError]}
-                    placeholder="123"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="number-pad"
-                    value={cvv}
-                    onChangeText={(text) => setCvv(text.substring(0, 4))}
-                    maxLength={4}
-                    secureTextEntry
-                  />
-                  {errors.cvv && (
-                    <Text style={styles.errorText}>{errors.cvv}</Text>
-                  )}
-                </View>
+              <View style={[styles.radio, styles.radioActive]}>
+                <View style={styles.radioDot} />
               </View>
             </View>
-          )}
+          </View>
+
+          {/* CARD DETAILS */}
+          <View style={styles.cardForm}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Card Number</Text>
+              <TextInput
+                style={[styles.input, errors.cardNumber && styles.inputError]}
+                placeholder="1234 5678 9012 3456"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="number-pad"
+                value={cardNumber}
+                onChangeText={(text) => setCardNumber(formatCardNumber(text))}
+                maxLength={19}
+              />
+              {errors.cardNumber && <Text style={styles.errorText}>{errors.cardNumber}</Text>}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Cardholder Name</Text>
+              <TextInput
+                style={[styles.input, errors.cardName && styles.inputError]}
+                placeholder="John Doe"
+                placeholderTextColor="#9CA3AF"
+                value={cardName}
+                onChangeText={setCardName}
+                autoCapitalize="words"
+              />
+              {errors.cardName && <Text style={styles.errorText}>{errors.cardName}</Text>}
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <Text style={styles.inputLabel}>Expiry Date</Text>
+                <TextInput
+                  style={[styles.input, errors.expiryDate && styles.inputError]}
+                  placeholder="MM/YY"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="number-pad"
+                  value={expiryDate}
+                  onChangeText={(text) => setExpiryDate(formatExpiryDate(text))}
+                  maxLength={5}
+                />
+                {errors.expiryDate && <Text style={styles.errorText}>{errors.expiryDate}</Text>}
+              </View>
+
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <Text style={styles.inputLabel}>CVV</Text>
+                <TextInput
+                  style={[styles.input, errors.cvv && styles.inputError]}
+                  placeholder="123"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="number-pad"
+                  value={cvv}
+                  onChangeText={(text) => setCvv(text.substring(0, 4))}
+                  maxLength={4}
+                  secureTextEntry
+                />
+                {errors.cvv && <Text style={styles.errorText}>{errors.cvv}</Text>}
+              </View>
+            </View>
+          </View>
+
+          {/* ✅ DELIVERY ADDRESS (ADDED – SAME FORMAT) */}
+          <View style={[styles.cardForm, { marginTop: 20 }]}>
+            <Text style={styles.sectionTitle}>Delivery Address</Text>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Street Address</Text>
+              <TextInput
+                style={[styles.input, errors.streetAddress && styles.inputError]}
+                placeholder="123 Main Street"
+                placeholderTextColor="#9CA3AF"
+                value={streetAddress}
+                onChangeText={setStreetAddress}
+              />
+              {errors.streetAddress && <Text style={styles.errorText}>{errors.streetAddress}</Text>}
+            </View>
+
+            <View style={styles.row}>
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <Text style={styles.inputLabel}>City</Text>
+                <TextInput
+                  style={[styles.input, errors.city && styles.inputError]}
+                  placeholder="Johannesburg"
+                  placeholderTextColor="#9CA3AF"
+                  value={city}
+                  onChangeText={setCity}
+                />
+                {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
+              </View>
+
+              <View style={[styles.inputContainer, styles.halfWidth]}>
+                <Text style={styles.inputLabel}>Postal Code</Text>
+                <TextInput
+                  style={[styles.input, errors.postalCode && styles.inputError]}
+                  placeholder="2001"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="number-pad"
+                  value={postalCode}
+                  onChangeText={setPostalCode}
+                  maxLength={5}
+                />
+                {errors.postalCode && <Text style={styles.errorText}>{errors.postalCode}</Text>}
+              </View>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[
-            styles.payButton,
-            (!paymentMethod || loading) && styles.payButtonDisabled,
-          ]}
-          onPress={paymentMethod === 'card' ? handleCardPayment : handlePayPalPayment}
-          disabled={!paymentMethod || loading}
+          style={[styles.payButton, loading && styles.payButtonDisabled]}
+          onPress={handleCardPayment}
+          disabled={loading}
         >
           <LinearGradient
-            colors={!paymentMethod || loading ? ['#9CA3AF', '#6B7280'] : ['#DC2626', '#B91C1C']}
+            colors={loading ? ['#9CA3AF', '#6B7280'] : ['#DC2626', '#B91C1C']}
             style={styles.payButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
           >
-            {loading ? (
-              <Text style={styles.payButtonText}>Processing...</Text>
-            ) : (
-              <>
-                <Lock color="#FFFFFF" size={20} />
-                <Text style={styles.payButtonText}>
-                  Pay R{grandTotal.toFixed(2)}
-                </Text>
-              </>
-            )}
+            <Lock color="#FFFFFF" size={20} />
+            <Text style={styles.payButtonText}>
+              {loading ? 'Processing...' : `Pay R${grandTotal.toFixed(2)}`}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -495,6 +551,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
+    marginBottom: 25,
   },
   payButton: {
     borderRadius: 12,

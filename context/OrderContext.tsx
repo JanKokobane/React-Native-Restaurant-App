@@ -1,6 +1,9 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Order } from '@/types';
 import React from 'react';
+import { db } from '../firebaseConfig';
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
 
 interface OrderContextType {
   orders: Order[];
@@ -10,28 +13,35 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: '1',
-      userId: '1',
-      items: [],
-      totalAmount: 45.97,
-      deliveryAddress: '123 Main Street, Apt 4B, New York, NY 10001',
-      status: 'delivered',
-      createdAt: new Date('2024-03-10'),
-    },
-    {
-      id: '2',
-      userId: '1',
-      items: [],
-      totalAmount: 28.98,
-      deliveryAddress: '123 Main Street, Apt 4B, New York, NY 10001',
-      status: 'preparing',
-      createdAt: new Date('2024-03-12'),
-    },
-  ]);
+  const { user } = useAuth(); // get current logged-in user
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      setOrders([]);
+      return;
+    }
+
+    // 🔑 Listen to Firestore orders for this user
+    const q = query(
+      collection(db, 'orders'),
+      where('userId', '==', user.id),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetched = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Order[];
+      setOrders(fetched);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const addOrder = (orderData: Omit<Order, 'id' | 'createdAt'>) => {
+    // optional: still allow adding locally if needed
     const newOrder: Order = {
       ...orderData,
       id: Math.random().toString(36).substring(7),
