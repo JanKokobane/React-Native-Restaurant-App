@@ -25,14 +25,14 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
-  // 🚨 AuthGuard: redirect if logged out
+
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/auth/login');
     }
   }, [user, loading]);
 
-  if (loading || !user) return null; // splash/loading while checking auth
+  if (loading || !user) return null; 
 
   const initials = `${user?.name?.charAt(0) || ''}${user?.surname?.charAt(0) || ''}`.toUpperCase();
 
@@ -96,7 +96,7 @@ export default function HomeScreen() {
               style={styles.dropdownItem}
               onPress={async () => {
                 setDropdownVisible(false);
-                await logout(); // triggers redirect
+                await logout();
               }}
             >
               <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Logout</Text>

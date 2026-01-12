@@ -42,12 +42,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileCard}>
-          <LinearGradient
-            colors={['#EF4444', '#DC2626', '#B91C1C']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradientHeader}
-          />
+        <View style={[styles.gradientHeader, { backgroundColor: '#ffffff' }]} />
+
 
           <View style={styles.profileInfoContainer}>
             <View style={styles.avatarWrapper}>
@@ -154,6 +150,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    marginTop: 15,
   },
   gradientHeader: {
     height: 140,
