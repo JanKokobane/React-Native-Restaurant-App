@@ -94,7 +94,7 @@ export default function CartScreen() {
 
               <View style={styles.itemFooter}>
                 <Text style={styles.itemPrice}>
-                  ${item.totalPrice.toFixed(2)}
+                  R{item.totalPrice.toFixed(2)}
                 </Text>
                 <View style={styles.quantityControls}>
                   <TouchableOpacity
@@ -131,7 +131,7 @@ export default function CartScreen() {
       <View style={styles.footer}>
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalPrice}>${getCartTotal().toFixed(2)}</Text>
+          <Text style={styles.totalPrice}>R{getCartTotal().toFixed(2)}</Text>
         </View>
         <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
           <Text style={styles.checkoutButtonText}>
@@ -157,8 +157,6 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: '#EF4444',
   },
-
-
   headerTitle: {
     fontSize: 32,
     fontWeight: '700',
