@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Star, Minus, Plus } from 'lucide-react-native';
-import { foodItems } from '@/data/foodData';
 import { useCart } from '@/context/CartContext';
 import { DrinkOption, ExtraOption } from '@/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 import React from 'react';
 
 const { width } = Dimensions.get('window');
@@ -20,13 +21,40 @@ const { width } = Dimensions.get('window');
 export default function FoodDetailScreen() {
   const { id } = useLocalSearchParams();
   const { addToCart } = useCart();
-  const foodItem = foodItems.find((item) => item.id === id);
+  const [foodItem, setFoodItem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSides, setSelectedSides] = useState<string[]>([]);
   const [selectedDrink, setSelectedDrink] = useState<DrinkOption | undefined>();
   const [selectedExtras, setSelectedExtras] = useState<ExtraOption[]>([]);
   const [removedIngredients, setRemovedIngredients] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchFoodItem = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'foodItems', id as string));
+        if (snap.exists()) {
+          setFoodItem(snap.data());
+        } else {
+          setFoodItem(null);
+        }
+      } catch (err) {
+        console.error('Error fetching food item:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchFoodItem();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   if (!foodItem) {
     return (
@@ -115,7 +143,7 @@ export default function FoodDetailScreen() {
                 Choose Sides (Select up to {maxSides})
               </Text>
               <View style={styles.optionsGrid}>
-                {foodItem.sides.map((side) => (
+                {foodItem.sides.map((side: string) => (   
                   <TouchableOpacity
                     key={side}
                     style={[
@@ -147,7 +175,7 @@ export default function FoodDetailScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Choose a Drink</Text>
               <View style={styles.optionsGrid}>
-                {foodItem.drinks.map((drink) => (
+                {foodItem.drinks.map((drink: DrinkOption) => (   
                   <TouchableOpacity
                     key={drink.id}
                     style={[
@@ -162,7 +190,7 @@ export default function FoodDetailScreen() {
                           styles.optionTextSelected,
                       ]}>
                       {drink.name}
-                      {drink.price > 0 && ` (+$${drink.price.toFixed(2)})`}
+                      {drink.price > 0 && ` (+R${drink.price.toFixed(2)})`}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -174,7 +202,7 @@ export default function FoodDetailScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Add Extras</Text>
               <View style={styles.optionsGrid}>
-                {foodItem.extras.map((extra) => (
+                {foodItem.extras.map((extra: ExtraOption) => (   
                   <TouchableOpacity
                     key={extra.id}
                     style={[
@@ -189,7 +217,7 @@ export default function FoodDetailScreen() {
                         selectedExtras.find((e) => e.id === extra.id) &&
                           styles.optionTextSelected,
                       ]}>
-                      {extra.name} (+${extra.price.toFixed(2)})
+                      {extra.name} (+R{extra.price.toFixed(2)})
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -202,7 +230,7 @@ export default function FoodDetailScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Remove Ingredients</Text>
                 <View style={styles.optionsGrid}>
-                  {foodItem.removableIngredients.map((ingredient) => (
+                  {foodItem.removableIngredients.map((ingredient: string) => (   
                     <TouchableOpacity
                       key={ingredient}
                       style={[
@@ -223,7 +251,7 @@ export default function FoodDetailScreen() {
                   ))}
                 </View>
               </View>
-            )}
+          )}
 
           <View style={styles.quantitySection}>
             <Text style={styles.sectionTitle}>Quantity</Text>
@@ -247,7 +275,7 @@ export default function FoodDetailScreen() {
       <View style={styles.footer}>
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalPrice}>${calculateTotal().toFixed(2)}</Text>
+          <Text style={styles.totalPrice}>R{calculateTotal().toFixed(2)}</Text>
         </View>
         <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
           <Text style={styles.addButtonText}>Add to Cart</Text>

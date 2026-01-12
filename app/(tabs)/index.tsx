@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Search, Star } from 'lucide-react-native';
-import { foodItems, categories } from '@/data/foodData';
 import { FoodItem } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 import React from 'react';
 
 const { width } = Dimensions.get('window');
@@ -24,7 +25,8 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,7 +34,25 @@ export default function HomeScreen() {
     }
   }, [user, loading]);
 
-  if (loading || !user) return null; 
+  useEffect(() => {
+    const fetchFoodItems = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'foodItems'));
+        const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as FoodItem[];
+        setFoodItems(items);
+
+        // derive categories dynamically
+        const uniqueCategories = Array.from(new Set(items.map(item => item.category)));
+        setCategories(['All', ...uniqueCategories]);
+      } catch (err) {
+        console.error('Error fetching food items:', err);
+      }
+    };
+
+    fetchFoodItems();
+  }, []);
+
+  if (loading || !user) return null;
 
   const initials = `${user?.name?.charAt(0) || ''}${user?.surname?.charAt(0) || ''}`.toUpperCase();
 
@@ -57,7 +77,7 @@ export default function HomeScreen() {
           <Text style={styles.rating}>{item.rating}</Text>
           <Text style={styles.prepTime}>{item.prepTime}</Text>
         </View>
-        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );
