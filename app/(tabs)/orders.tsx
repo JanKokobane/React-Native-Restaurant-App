@@ -12,7 +12,7 @@ import { Package, Clock, CheckCircle, XCircle } from 'lucide-react-native';
 import React from 'react';
 
 export default function OrdersScreen() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { orders } = useOrders();
 
   if (!isAuthenticated) {
@@ -36,12 +36,10 @@ export default function OrdersScreen() {
     );
   }
 
-  const userOrders = orders.filter(
-    (order) => order.userId === (useAuth().user?.id || '')
-  );
+  const userOrders = orders;
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'delivered':
         return '#10B981';
       case 'preparing':
@@ -57,7 +55,7 @@ export default function OrdersScreen() {
 
   const getStatusIcon = (status: string) => {
     const color = getStatusColor(status);
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'delivered':
         return <CheckCircle size={20} color={color} />;
       case 'preparing':
@@ -109,11 +107,17 @@ export default function OrdersScreen() {
               <View>
                 <Text style={styles.orderId}>Order #{order.id}</Text>
                 <Text style={styles.orderDate}>
-                  {new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  {order.createdAt?.toDate
+                    ? order.createdAt.toDate().toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : new Date(order.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                 </Text>
               </View>
               <View style={styles.statusContainer}>
@@ -131,13 +135,16 @@ export default function OrdersScreen() {
             <View style={styles.orderBody}>
               <View style={styles.addressContainer}>
                 <Text style={styles.addressLabel}>Delivery Address</Text>
-                <Text style={styles.addressText}>{order.deliveryAddress}</Text>
+                <Text style={styles.addressText}>
+                  {order.address.street}, {order.address.city}{' '}
+                  {order.address.postalCode}
+                </Text>
               </View>
 
               <View style={styles.totalContainer}>
                 <Text style={styles.totalLabel}>Total Amount</Text>
                 <Text style={styles.totalAmount}>
-                  ${order.totalAmount.toFixed(2)}
+                  ${order.total.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -147,6 +154,7 @@ export default function OrdersScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
