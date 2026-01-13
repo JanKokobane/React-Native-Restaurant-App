@@ -1,18 +1,20 @@
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useOrders } from '@/context/OrderContext';
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react-native';
-import React from 'react';
+import { Timestamp } from 'firebase/firestore';
 
 export default function OrdersScreen() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { orders } = useOrders();
 
   if (!isAuthenticated) {
@@ -28,7 +30,8 @@ export default function OrdersScreen() {
           </Text>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => router.push('../auth/login')}>
+            onPress={() => router.push('../auth/login')}
+          >
             <Text style={styles.loginButtonText}>Login</Text>
           </TouchableOpacity>
         </View>
@@ -53,21 +56,21 @@ export default function OrdersScreen() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    const color = getStatusColor(status);
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return <CheckCircle size={20} color={color} />;
-      case 'preparing':
-        return <Clock size={20} color={color} />;
-      case 'pending':
-        return <Package size={20} color={color} />;
-      case 'cancelled':
-        return <XCircle size={20} color={color} />;
-      default:
-        return <Package size={20} color={color} />;
-    }
-  };
+  // const getStatusIcon = (status: string) => {
+  //   const color = getStatusColor(status);
+  //   switch (status.toLowerCase()) {
+  //     case 'delivered':
+  //       return <CheckCircle size={20} color={color} />;
+  //     case 'preparing':
+  //       return <Clock size={20} color={color} />;
+  //     case 'pending':
+  //       return <Package size={20} color={color} />;
+  //     case 'cancelled':
+  //       return <XCircle size={20} color={color} />;
+  //     default:
+  //       return <Package size={20} color={color} />;
+  //   }
+  // };
 
   if (userOrders.length === 0) {
     return (
@@ -83,7 +86,8 @@ export default function OrdersScreen() {
           </Text>
           <TouchableOpacity
             style={styles.browseButton}
-            onPress={() => router.push('../(tabs)')}>
+            onPress={() => router.push('../(tabs)')}
+          >
             <Text style={styles.browseButtonText}>Browse Menu</Text>
           </TouchableOpacity>
         </View>
@@ -100,96 +104,111 @@ export default function OrdersScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-        {userOrders.map((order) => (
-          <View key={order.id} style={styles.orderCard}>
-            <View style={styles.orderHeader}>
-              <View>
-                <Text style={styles.orderId}>Order #{order.id}</Text>
-                <Text style={styles.orderDate}>
-                  {order.createdAt?.toDate
-                    ? order.createdAt.toDate().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : new Date(order.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                </Text>
+        showsVerticalScrollIndicator={false}
+      >
+        {userOrders.map((order, index) => {
+          
+          let orderDate: Date;
+          if (order.createdAt instanceof Date) {
+            orderDate = order.createdAt;
+          } else if (order.createdAt instanceof Timestamp) {
+            orderDate = order.createdAt.toDate();
+          } else {
+            orderDate = new Date(order.createdAt);
+          }
+
+          const formattedDate = `${orderDate.toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })} at ${orderDate.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZoneName: 'short',
+          })}`;
+
+          return (
+            <View key={order.id} style={styles.orderCard}>
+              <View style={styles.orderHeader}>
+                <View>
+                  
+                  <Text style={styles.orderId}>Order #{index + 1}</Text>
+                  <Text style={styles.orderDate}>{formattedDate}</Text>
+                </View>
+                <View style={styles.statusContainer}>
+                  {/* {getStatusIcon(order.status)} */}
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: getStatusColor(order.status) },
+                    ]}
+                  >
+                    {order.status.charAt(0).toUpperCase() +
+                      order.status.slice(1)}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.statusContainer}>
-                {getStatusIcon(order.status)}
-                <Text
-                  style={[
-                    styles.statusText,
-                    { color: getStatusColor(order.status) },
-                  ]}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                </Text>
+
+              <View style={styles.orderBody}>
+                
+                {order.items.map((item) => (
+                  <View key={item.cartItemId} style={styles.itemRow}>
+                    <Image
+                      source={{ uri: item.foodItem.image }}
+                      style={styles.itemImage}
+                    />
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName}>{item.foodItem.name}</Text>
+                      <Text style={styles.itemQuantity}>Qty: {item.quantity}</Text>
+                      <Text style={styles.itemPrice}>
+                        R{item.totalPrice.toFixed(2)}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+
+                <View style={styles.addressContainer}>
+                  <Text style={styles.addressLabel}>Delivery Address</Text>
+                  <Text style={styles.addressText}>
+                    {order.address.street}, {order.address.city}{' '}
+                    {order.address.postalCode}
+                  </Text>
+                </View>
+
+                <View style={styles.totalContainer}>
+                  <Text style={styles.totalLabel}>Total Amount</Text>
+                  <Text style={styles.totalAmount}>
+                    R{order.total.toFixed(2)}
+                  </Text>
+                </View>
               </View>
             </View>
-
-            <View style={styles.orderBody}>
-              <View style={styles.addressContainer}>
-                <Text style={styles.addressLabel}>Delivery Address</Text>
-                <Text style={styles.addressText}>
-                  {order.address.street}, {order.address.city}{' '}
-                  {order.address.postalCode}
-                </Text>
-              </View>
-
-              <View style={styles.totalContainer}>
-                <Text style={styles.totalLabel}>Total Amount</Text>
-                <Text style={styles.totalAmount}>
-                  ${order.total.toFixed(2)}
-                </Text>
-              </View>
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   header: {
     paddingHorizontal: 24,
     paddingTop: 30,
     paddingBottom: 10,
     backgroundColor: '#EF4444',
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
+  headerTitle: { fontSize: 32, fontWeight: '700', color: '#ffffff' },
   notAuthContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 48,
   },
-  notAuthText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  notAuthSubtext: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
+  notAuthText: { fontSize: 24, fontWeight: '700', color: '#1F2937', marginBottom: 8 },
+  notAuthSubtext: { fontSize: 16, color: '#6B7280', textAlign: 'center', marginBottom: 32 },
   loginButton: {
     backgroundColor: '#EF4444',
     paddingHorizontal: 48,
@@ -198,118 +217,31 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  loginButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 48,
-  },
-  emptyText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  browseButton: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  browseButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-  },
-  orderCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  orderId: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  orderDate: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  orderBody: {
-    gap: 12,
-  },
-  addressContainer: {
-    marginBottom: 12,
-  },
-  addressLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  addressText: {
-    fontSize: 14,
-    color: '#1F2937',
-    lineHeight: 20,
-  },
-  totalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  totalAmount: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#EF4444',
-  },
+  loginButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 48 },
+  emptyText: { fontSize: 24, fontWeight: '700', color: '#1F2937', marginTop: 16, marginBottom: 8 },
+  emptySubtext: { fontSize: 16, color: '#6B7280', textAlign: 'center', marginBottom: 24 },
+  browseButton: { backgroundColor: '#EF4444', paddingHorizontal: 32, paddingVertical: 14, borderRadius: 12 },
+  browseButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 },
+  orderCard: { backgroundColor: '#ffffff', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#E5E7EB' },
+  orderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  orderId: { fontSize: 18, fontWeight: '700', color: '#1F2937', marginBottom: 4 },
+  orderDate: { fontSize: 14, color: '#6B7280' },
+  statusContainer: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statusText: { fontSize: 14, fontWeight: '600' },
+  orderBody: { gap: 12 },
+  addressContainer: { marginBottom: 12 },
+  addressLabel: { fontSize: 12, fontWeight: '600', color: '#6B7280', marginBottom: 4 },
+  addressText: { fontSize: 14, color: '#1F2937', lineHeight: 20 },
+  totalContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  totalLabel: { fontSize: 16, fontWeight: '600', color: '#6B7280' },
+  totalAmount: { fontSize: 20, fontWeight: '700', color: '#EF4444' },
+  itemRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
+  itemImage: { width: 50, height: 50, borderRadius: 8, backgroundColor: '#F3F4F6' },
+  itemDetails: { flex: 1, justifyContent: 'center' },
+  itemName: { fontSize: 14, fontWeight: '600', color: '#1F2937' },
+  itemQuantity: { fontSize: 12, color: '#6B7280' },
+  itemPrice: { fontSize: 14, fontWeight: '700', color: '#EF4444' },
 });

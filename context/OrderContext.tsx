@@ -32,14 +32,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.uid) {
+    if (!user?.id) {
       setOrders([]);
       return;
     }
 
     const q = query(
       collection(db, 'orders'),
-      where('userId', '==', user.uid),
+      where('userId', '==', user.id), 
       orderBy('createdAt', 'desc')
     );
 
@@ -55,36 +55,32 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         setError(null);
       },
       (err) => {
-        console.error('Firestore onSnapshot error:', err);
+        console.error('Orders snapshot error:', err);
         setError(err.message);
         setOrders([]);
       }
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user?.id]); 
 
   const addOrder = async (
     orderData: Omit<Order, 'id' | 'createdAt'>
   ) => {
-    if (!user?.uid) return;
-
-    try {
-      await addDoc(collection(db, 'orders'), {
-        ...orderData,
-        userId: user.uid,        
-        createdAt: serverTimestamp(), 
-      });
-    } catch (err: any) {
-      console.error('Add order error:', err);
-      setError(err.message);
+    if (!user?.id) {
+      throw new Error('User not authenticated');
     }
+
+    await addDoc(collection(db, 'orders'), {
+      ...orderData,
+      userId: user.id, 
+      createdAt: serverTimestamp(),
+    });
   };
 
   return (
     <OrderContext.Provider value={{ orders, addOrder }}>
       {children}
-
       {error && (
         <Text style={{ color: 'red', padding: 8 }}>
           ⚠️ Orders error: {error}
@@ -97,7 +93,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 export function useOrders() {
   const context = useContext(OrderContext);
   if (!context) {
-    throw new Error('useOrders must be used within an OrderProvider');
+    throw new Error('useOrders must be used within OrderProvider');
   }
   return context;
 }

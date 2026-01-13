@@ -1,7 +1,3 @@
-import { doc, setDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { db } from '@/firebaseConfig';
-
 import { useState } from 'react';
 import {
   View,
@@ -93,38 +89,14 @@ export default function RegisterScreen() {
         addressLine2: formData.addressLine2,
         fullAddress: formData.fullAddress,
         password: formData.password,
-        image: undefined
+        image: undefined,
       });
 
       if (!success) {
         setError(message);
         return;
       }
-      
-      const auth = getAuth();
-      const user = auth.currentUser;
 
-      if (!user) {
-        setError('User not authenticated');
-        return;
-      }
-
-      const uid = user.uid;
-
-      await setDoc(doc(db, 'users', uid), {
-        id: uid,
-        name: formData.name,
-        surname: formData.surname,
-        email: formData.email,
-        phone: formData.phone,
-        streetName: formData.streetName,
-        streetNumber: formData.streetNumber,
-        fullAddress: `${formData.streetNumber} ${formData.streetName}`,
-        addressLine2: formData.addressLine2 || '',
-        joinedDate: new Date().toISOString(),
-      });
-
-      // ✅ GO HOME (AUTO LOGIN)
       router.replace('/');
 
     } catch (err) {
@@ -133,6 +105,7 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
+
 
   return (
     <KeyboardAvoidingView

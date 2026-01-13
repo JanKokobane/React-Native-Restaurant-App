@@ -15,11 +15,12 @@ import { router } from 'expo-router';
 import { CreditCard, Lock, ArrowLeft } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Firestore imports
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CheckoutScreen() {
+  const { user } = useAuth(); // ✅ Get real user
   const { getCartTotal, cart, clearCart } = useCart(); 
   const [loading, setLoading] = useState(false);
 
@@ -85,10 +86,14 @@ export default function CheckoutScreen() {
   const handleCardPayment = async () => {
     if (!validateCard()) return;
 
+    if (!user?.id) {
+      Alert.alert('Error', 'User not logged in. Please login and try again.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-     
       const orderItems = cart.map(item => ({
         cartItemId: item.cartItemId,
         quantity: item.quantity,
@@ -132,7 +137,7 @@ export default function CheckoutScreen() {
         },
         status: "PENDING",
         createdAt: serverTimestamp(),
-        userId: "demoUser", 
+        userId: user.id, // ✅ Use real logged-in user
       });
 
       clearCart();

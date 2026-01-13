@@ -32,16 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-        if (snap.exists()) setUser(snap.data() as User);
-        else setUser(null);
+        if (snap.exists()) {
+          setUser({
+            id: firebaseUser.uid,
+            ...(snap.data() as Omit<User, "id">),
+          });
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
       setLoading(false);
     });
+  
     return unsubscribe;
   }, []);
-
+  
   const register = async (userData: Omit<User, "id"> & { password: string }) => {
     try {
       const cred = await createUserWithEmailAndPassword(auth, userData.email, userData.password);

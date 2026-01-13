@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface FoodItem {
   id: string;
   name: string;
@@ -52,12 +54,30 @@ export interface User {
 }
 
 
+// export interface Order {
+//   address: any;
+//   total: any;
+//   id: string;
+//   userId: string;
+//   items: CartItem[];
+//   totalAmount: number;
+//   deliveryAddress: string;
+//   status: 'pending' | 'preparing' | 'delivered' | 'cancelled';
+//   createdAt: Date;
+// }
+
 export interface Order {
   id: string;
-  userId: string;
-  items: CartItem[];
-  totalAmount: number;
-  deliveryAddress: string;
+  createdAt: Date | Timestamp; 
   status: 'pending' | 'preparing' | 'delivered' | 'cancelled';
-  createdAt: Date;
+  address: {
+    street: string;
+    city: string;
+    postalCode: string;
+  };
+  total: number;
+  userId: string;
+  items: any[];
 }
+
+
