@@ -39,6 +39,7 @@ export default function SettingsScreen() {
       >
         <Text style={styles.sectionTitle}>Communications</Text>
         <View style={styles.card}>
+          
           <TouchableOpacity style={styles.menuItem}>
             <User size={24} color="#1F2937" />
             <Text style={styles.menuItemText}>Contact info</Text>

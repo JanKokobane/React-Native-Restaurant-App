@@ -10,6 +10,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface AuthContextType {
   user: User | null;
@@ -96,9 +97,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut(auth);
-    setUser(null);
+    try {
+      await signOut(auth); 
+      setUser(null);       
+  
+      await AsyncStorage.removeItem('userToken'); 
+      await AsyncStorage.removeItem('user');      
+  
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
+  
 
   const updateProfile = async (updates: Partial<User>) => {
     if (!user) return { success: false, message: "No user logged in" };

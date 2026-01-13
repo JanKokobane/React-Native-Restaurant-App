@@ -48,7 +48,6 @@ export default function LoginScreen() {
   }
 };
 
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -62,7 +61,7 @@ export default function LoginScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <ArrowLeft color="#1F2937" size={24} />
+          {/* <ArrowLeft color="#1F2937" size={24} /> */}
         </TouchableOpacity>
 
         <View style={styles.header}>

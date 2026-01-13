@@ -115,14 +115,22 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={styles.dropdownItem}
               onPress={async () => {
-                setDropdownVisible(false);
-                await logout();
+                try {
+                  setDropdownVisible(false);
+                  await logout();                  // clears user & token
+                  router.replace('/auth/login');   // safely redirect to login
+                } catch (err) {
+                  console.error('Logout failed:', err);
+                }
               }}
             >
               <Text style={[styles.dropdownText, { color: '#EF4444' }]}>Logout</Text>
             </TouchableOpacity>
+
+            
           </View>
         )}
+
       </View>
 
       {/* Search and Categories */}
