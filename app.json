@@ -4,7 +4,7 @@
     "slug": "React-Native-Restaurant-App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/admin-logo.png",
     "scheme": "reactnativerestaurantapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

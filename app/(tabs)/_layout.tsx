@@ -5,11 +5,13 @@ import { Tabs } from 'expo-router';
 import { Home, Package, User } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { getCartItemCount } = useCart();
   const cartCount = getCartItemCount();
   const { isAuthenticated } = useAuth();
+  const insets = useSafeAreaInsets();
 
   if (!isAuthenticated) return null;
 
@@ -23,8 +25,8 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
           paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8, 
+          height: 60 + insets.bottom,
         },
       }}
     >

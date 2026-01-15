@@ -22,8 +22,9 @@ export default function OrderSuccessScreen() {
       <View style={styles.infoCard}>
         <Text style={styles.infoTitle}>What's Next?</Text>
         <Text style={styles.infoText}>
-          You'll receive a confirmation email shortly with your order details and estimated delivery time.
+          Your order is being prepared with care and will be served soon.  Thank you for choosing  us. FoodDash
         </Text>
+
       </View>
 
       <TouchableOpacity

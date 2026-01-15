@@ -32,7 +32,7 @@ export const foodItems: FoodItem[] = [
       { id: 'e1', name: 'Extra Cheese', price: 1.5 },
       { id: 'e2', name: 'Bacon', price: 2.5 },
       { id: 'e3', name: 'Avocado', price: 2.0 },
-      { id: 'e4', name: 'Extra Patty', price: 4.0 },
+      { id: 'e4', name: 'Avocado', price: 4.0 },
     ],
     removableIngredients: ['Lettuce', 'Tomatoes', 'Onions', 'Pickles'],
   },

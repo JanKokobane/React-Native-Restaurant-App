@@ -20,7 +20,7 @@ import { db } from '../firebaseConfig';
 import { useAuth } from '@/context/AuthContext';
 
 export default function CheckoutScreen() {
-  const { user } = useAuth(); // ✅ Get real user
+  const { user } = useAuth();
   const { getCartTotal, cart, clearCart } = useCart(); 
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +35,9 @@ export default function CheckoutScreen() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // ✅ Only use cart total
   const total = getCartTotal();
-  const deliveryFee = 25.0;
-  const grandTotal = total + deliveryFee;
+  const grandTotal = total; // no delivery fee
 
   const formatCardNumber = (text: string) => {
     const cleaned = text.replace(/\s/g, '');
@@ -123,8 +123,7 @@ export default function CheckoutScreen() {
       await addDoc(collection(db, "orders"), {
         items: orderItems,
         subtotal: Number(total),
-        deliveryFee: Number(deliveryFee),
-        total: Number(grandTotal),
+        total: Number(grandTotal), // ✅ no delivery fee
         address: {
           street: streetAddress,
           city,
@@ -137,7 +136,7 @@ export default function CheckoutScreen() {
         },
         status: "PENDING",
         createdAt: serverTimestamp(),
-        userId: user.id, // ✅ Use real logged-in user
+        userId: user.id,
       });
 
       clearCart();
@@ -160,7 +159,7 @@ export default function CheckoutScreen() {
     );
   }
 
- 
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -187,8 +186,8 @@ export default function CheckoutScreen() {
               <Text style={styles.summaryValue}>R{total.toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>R{deliveryFee.toFixed(2)}</Text>
+            <Text style={styles.summaryLabel}>⏳ Hang tight — your delicious order is on the way. FoodDash</Text>
+              {/* <Text style={styles.summaryValue}>R{deliveryFee.toFixed(2)}</Text> */}
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
