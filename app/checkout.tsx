@@ -232,7 +232,7 @@ export default function CheckoutScreen() {
               <Text style={styles.inputLabel}>Cardholder Name</Text>
               <TextInput
                 style={[styles.input, errors.cardName && styles.inputError]}
-                placeholder="John Doe"
+                placeholder="Enter name as it appears on card"
                 placeholderTextColor="#9CA3AF"
                 value={cardName}
                 onChangeText={setCardName}
